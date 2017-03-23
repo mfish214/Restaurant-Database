@@ -1,0 +1,164 @@
+use restaurant;
+	create table The_OWNER
+	(Owner_name varchar(15) not null,
+	ssn char(9) not null,
+	primary key(ssn),
+	);
+
+	create table RESTAURANT
+	(Restaurant_name varchar(15) not null, 
+	rest_location varchar(15) not null,
+	owner_ssn char(9) not null,
+	primary key(rest_location),
+	constraint UC_restaurant UNIQUE (rest_location),
+	constraint owner_ssn_keyzz foreign key(owner_ssn) references The_OWNER(ssn),
+	);
+
+	create table EMPLOYEE
+	(ssn char(9) not null,
+	age char(2) not null,
+	experience char(1) not null,
+	mgr_ssn char(9) not null,
+	rest_location varchar(15) not null,
+	primary key(ssn),
+	constraint UC_employee UNIQUE (ssn),
+	constraint mgr_ssn_key foreign key(mgr_ssn) references The_OWNER(ssn),
+	constraint rest_location_key foreign key(rest_location) references RESTAURANT(rest_location),
+	constraint CHK_employees check (age>18 AND age<50)
+	);
+
+	create table FUNDS_ACCOUNT
+	(account_number char(10) not null,
+	owner_ssn char(9) not null,
+	amount char(10) not null,
+	primary key(account_number),
+	constraint UC_funds_account UNIQUE (account_number),
+	constraint owner_ssn_keys2 foreign key(owner_ssn) references The_OWNER(ssn)
+	);
+
+	create table PAYCHECK
+	(ID varchar(15) not null,
+	amount char(10) not null,
+	accnt_no char(10) not null,
+	essn char(9) not null,
+	owner_ssn char(9) not null,
+	primary key(ID),
+	constraint UC_paycheck UNIQUE (ID),
+	constraint accnt_no_key foreign key(accnt_no) references FUNDS_ACCOUNT(account_number),
+	constraint owner_ssn_keys foreign key(owner_ssn) references The_OWNER(ssn),
+	constraint essn_key foreign key(essn) references EMPLOYEE(ssn)
+	);
+
+	create table PAYCHECK_AUDIT
+	(ID varchar(15) not null,
+	amount char(10) not null,
+	accnt_no char(10) not null,
+	essn char(9) not null,
+	owner_ssn char(9) not null,
+	audit_action varchar(100),
+	audit_date datetime
+	);
+	
+
+	create table RESERVATIONS
+	(time char(4) not null,
+	Lname varchar(15) not null,
+	table_id char(2) not null,
+	rest_location varchar(15),
+	res_number char(2) not null,
+	primary key(res_number),
+	constraint UC_reservations UNIQUE (res_number),
+	constraint rest_location_key2 foreign key(rest_location) references RESTAURANT(rest_location)
+	);
+
+	create table WAITER
+	(ssn char(9) not null,
+	age char(2) not null,
+	primary key(ssn),
+	constraint UC_waiter UNIQUE (ssn),
+	constraint ssn_key foreign key(ssn) references EMPLOYEE(ssn),
+	constraint CHK_employee2 check (age>18 AND age<50)
+	);
+
+	create table AVAILABLE_TABLE
+	(waiter char(9) not null,
+	seats char(2) not null,
+	table_no char(2) not null,
+	primary key(table_no),
+	constraint UC_available_table UNIQUE (table_no),
+	constraint server_key foreign key(waiter) references WAITER(ssn),
+	constraint CHK_table check (seats<20)
+	);
+
+	create table COOK
+	(ssn char(9) not null,
+	education char(2) not null,
+	primary key(ssn),
+	constraint UC_cook UNIQUE (ssn),
+	constraint ssn_key2 foreign key(ssn) references EMPLOYEE(ssn)
+	);
+
+	create table MENU
+	(creator char(9) not null,
+	version_no char(2) not null,
+	items varchar(20) not null,
+	primary key(version_no),
+	constraint UC_version UNIQUE (version_no),
+	constraint creator_key foreign key(creator) references COOK(ssn)
+	);
+
+	create table ONLINE_ORDER
+	(ID varchar(15) not null,
+	items varchar(20) not null,
+	menu_version char(2) not null,
+	primary key(ID),
+	constraint UC_online_order UNIQUE (id),
+	constraint menu_version_key foreign key(menu_version) references MENU(version_no)
+	);
+
+	create table CUSTOMER
+	(ID varchar(15) not null,
+	no_people char(2) not null,
+	rest_location varchar(15) not null,
+	reservation_time char(4) not null,
+	reservation_number char(2) not null,
+	order_num varchar(15) not null,
+	primary key(ID),
+	constraint UC_customer UNIQUE (id),
+	constraint reservation_number_key foreign key(reservation_number) references RESERVATIONS(res_number),
+	constraint order_num_key foreign key(order_num) references ONLINE_ORDER(ID)
+	);
+
+	create table SPECIAL
+	(price char(5) not null,
+	item_ID char(4) not null,
+	menu char(2) not null,
+	dates_available int not null,
+	primary key(item_ID),
+	constraint UC_special UNIQUE (item_id),
+	constraint menu_key1 foreign key(menu) references MENU(version_no),
+	constraint CHK_date check (dates_available>0 AND dates_available<104) /*104 weekend days in a year; there needs to be somewhere between there.*/
+	);
+
+	create table ALCOHOLIC_BEVERAGE
+	(price char(5) not null,
+	item_ID char(4) not null,
+	menu char(2) not null,
+	dates_available int not null,
+	primary key(item_ID),
+	constraint UC_alcoholic_beverage UNIQUE (item_id),
+	constraint menu_key2 foreign key(menu) references MENU(version_no),
+	constraint CHK_dates check (dates_available>0 AND dates_available<6)   /*only available on 6 special holidays; can be in between*/
+	);
+
+	create table REGULAR_ITEM
+	(price char(5) not null,
+	item_ID char(4) not null,
+	menu char(2) not null,
+	dates_available int not null,
+	primary key(item_ID),
+	constraint UC_regular_item UNIQUE (item_id),
+	constraint menu_key3
+    foreign key(menu) references MENU(version_no),
+	constraint CHK_dates2 check (dates_available>0 AND dates_available<261) /*there are 261 weekdays in a year, so somewhere between there*/
+	);
