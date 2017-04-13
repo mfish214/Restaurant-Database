@@ -14,4 +14,10 @@ SELECT price FROM (SELECT price,dates_available FROM SPECIAL AS s
 WHERE EXISTS(SELECT price,dates_available FROM ALCOHOLIC_BEVERAGE AS a
 WHERE s.price=a.price AND a.dates_available>=s.dates_available)
 
-SELECTS 
+SELECT COUNT(*), AVERAGE(age) FROM 
+(SELECT * FROM EMPLOYEE WHERE ssn IN 
+(SELECT ssn FROM OWNER))
+
+SELECT table_no FROM (AVAILABLE_TABLE JOIN 
+(SERVER JOIN (COOK JOIN EMPLOYEE IN age>23) 
+IN age=years_experience) IN server=ssn)
