@@ -1,14 +1,14 @@
 DECLARE @intErrorCode INT
 BEGIN TRAN
 	UPDATE restaurant.dbo.EMPLOYEE
-	SET experience = 3
+	SET experience = '3'
 	WHERE ssn = '666666666'
 
 	SELECT @intErrorCode = @@ERROR
 	IF (@intErrorCode <> 0) GOTO PROBLEM
 
 	UPDATE restaurant.dbo.COOK
-	SET education = 3
+	SET education = '3'
 	WHERE ssn = '666666666'
 
 	SELECT @intErrorCode = @@ERROR
@@ -19,7 +19,7 @@ IF (@intErrorCode <> 0) BEGIN
 PRINT 'Unexpected error occured!'
 	ROLLBACK TRAN
 END
-
+/*
 SELECT 'Before BEGIN TRAN', @@TRANCOUNT
 BEGIN TRAN
 	SELECT 'After BEGIN TRAN', @@TRANCOUNT
@@ -29,7 +29,7 @@ BEGIN TRAN
 		SELECT 'After BEGIN TRAN nested', @@TRANCOUNT
 
 		UPDATE restaurant.dbo.EMPLOYEE
-		SET experience = 10
+		SET experience = '10'
 		WHERE ssn = '444444444'
 
 	COMMIT TRAN nested
@@ -39,7 +39,7 @@ BEGIN TRAN
 ROLLBACK TRAN
 
 SELECT 'After ROLLBACK TRAN', @@TRANCOUNT
-
+*/
 SELECT * FROM restaurant.dbo.EMPLOYEE
 
 SELECT 'Before BEGIN TRAN', @@TRANCOUNT
@@ -55,7 +55,7 @@ BEGIN TRAN main
 		SELECT 'After BEGIN TRAN nested', @@TRANCOUNT
 
 		UPDATE restaurant.dbo.EMPLOYEE
-		SET experience = 9
+		SET experience = '9'
 		WHERE ssn = '555555555'
 
 		SAVE TRAN updaterec
