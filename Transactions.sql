@@ -19,7 +19,7 @@ IF (@intErrorCode <> 0) BEGIN
 PRINT 'Unexpected error occured!'
 	ROLLBACK TRAN
 END
-/*
+
 SELECT 'Before BEGIN TRAN', @@TRANCOUNT
 BEGIN TRAN
 	SELECT 'After BEGIN TRAN', @@TRANCOUNT
@@ -29,7 +29,7 @@ BEGIN TRAN
 		SELECT 'After BEGIN TRAN nested', @@TRANCOUNT
 
 		UPDATE restaurant.dbo.EMPLOYEE
-		SET experience = '10'
+		SET experience = '6'
 		WHERE ssn = '444444444'
 
 	COMMIT TRAN nested
@@ -39,7 +39,7 @@ BEGIN TRAN
 ROLLBACK TRAN
 
 SELECT 'After ROLLBACK TRAN', @@TRANCOUNT
-*/
+
 SELECT * FROM restaurant.dbo.EMPLOYEE
 
 SELECT 'Before BEGIN TRAN', @@TRANCOUNT
