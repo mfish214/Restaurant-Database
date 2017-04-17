@@ -1,0 +1,678 @@
+use restaurant;
+	create table The_OWNER
+	(Owner_name varchar(15) not null,
+	ssn char(9) not null,
+	primary key(ssn),
+	);
+
+	create table RESTAURANT
+	(Restaurant_name varchar(15) not null, 
+	rest_location varchar(15) not null,
+	owner_ssn char(9) not null,
+	primary key(rest_location),
+	constraint UC_restaurant UNIQUE (rest_location),
+	constraint owner_ssn_keyzz foreign key(owner_ssn) references The_OWNER(ssn),
+	);
+
+	create table EMPLOYEE
+	(ssn char(9) not null,
+	age char(2) not null,
+	experience char(1) not null,
+	mgr_ssn char(9) not null,
+	rest_location varchar(15) not null,
+	primary key(ssn),
+	constraint UC_employee UNIQUE (ssn),
+	constraint mgr_ssn_key foreign key(mgr_ssn) references The_OWNER(ssn),
+	constraint rest_location_key foreign key(rest_location) references RESTAURANT(rest_location),
+	constraint CHK_employees check (age>18 AND age<50)
+	);
+
+	create table FUNDS_ACCOUNT
+	(account_number char(5) not null,
+	owner_ssn char(9) not null,
+	amount char(5) not null,
+	primary key(account_number),
+	constraint UC_funds_account UNIQUE (account_number),
+	constraint owner_ssn_keys2 foreign key(owner_ssn) references The_OWNER(ssn)
+	);
+
+	create table PAYCHECK
+	(ID char(5) not null,
+	amount char(5) not null,
+	accnt_no char(5) not null,
+	essn char(9) not null,
+	owner_ssn char(9) not null,
+	primary key(ID),
+	constraint UC_paycheck UNIQUE (ID),
+	constraint accnt_no_key foreign key(accnt_no) references FUNDS_ACCOUNT(account_number),
+	constraint owner_ssn_keys foreign key(owner_ssn) references The_OWNER(ssn),
+	constraint essn_key foreign key(essn) references EMPLOYEE(ssn)
+	);
+
+	
+	create table PAYCHECK_AUDIT
+	(ID char(5) not null,
+	amount char(5) not null,
+	accnt_no char(5) not null,
+	essn char(9) not null,
+	owner_ssn char(9) not null,
+	audit_action varchar(15),
+	audit_date char(4) not null
+	);
+	
+
+	create table RESERVATIONS
+	(time char(4) not null,
+	Lname varchar(15) not null,
+	table_id char(2) not null,
+	rest_location varchar(15),
+	res_number char(2) not null,
+	primary key(res_number),
+	constraint UC_reservations UNIQUE (res_number),
+	constraint rest_location_key2 foreign key(rest_location) references RESTAURANT(rest_location)
+	);
+
+	create table WAITER
+	(ssn char(9) not null,
+	age char(2) not null,
+	primary key(ssn),
+	constraint UC_waiter UNIQUE (ssn),
+	constraint ssn_key foreign key(ssn) references EMPLOYEE(ssn),
+	constraint CHK_employee2 check (age>18 AND age<50)
+	);
+
+	create table AVAILABLE_TABLE
+	(waiter char(9) not null,
+	seats char(2) not null,
+	table_no char(2) not null,
+	primary key(table_no),
+	constraint UC_available_table UNIQUE (table_no),
+	constraint server_key foreign key(waiter) references WAITER(ssn),
+	constraint CHK_table check (seats<20)
+	);
+
+	create table COOK
+	(ssn char(9) not null,
+	education char(2) not null,
+	primary key(ssn),
+	constraint UC_cook UNIQUE (ssn),
+	constraint ssn_key2 foreign key(ssn) references EMPLOYEE(ssn)
+	);
+
+	create table MENU
+	(creator char(9) not null,
+	version_no char(2) not null,
+	items varchar(20) not null,
+	primary key(version_no),
+	constraint UC_version UNIQUE (version_no),
+	constraint creator_key foreign key(creator) references COOK(ssn)
+	);
+
+	create table ONLINE_ORDER
+	(ID varchar(15) not null,
+	items varchar(2) not null,
+	menu_version char(2) not null,
+	primary key(ID),
+	constraint UC_online_order UNIQUE (id),
+	constraint menu_version_key foreign key(menu_version) references MENU(version_no)
+	);
+
+	create table CUSTOMER
+	(ID varchar(15) not null,
+	no_people char(2) not null,
+	rest_location varchar(15) not null,
+	reservation_time char(4) not null,
+	reservation_number char(2) not null,
+	order_num varchar(15) not null,
+	primary key(ID),
+	constraint UC_customer UNIQUE (id),
+	constraint reservation_number_key foreign key(reservation_number) references RESERVATIONS(res_number),
+	constraint order_num_key foreign key(order_num) references ONLINE_ORDER(ID)
+	);
+
+	create table SPECIAL
+	(price varchar(3) not null,
+	item_ID varchar(4) not null,
+	menu char(2) not null,
+	dates_available int not null,
+	primary key(item_ID),
+	constraint UC_special UNIQUE (item_id),
+	constraint menu_key1 foreign key(menu) references MENU(version_no),
+	constraint CHK_date check (dates_available>0 AND dates_available<104) /*104 weekend days in a year; there needs to be somewhere between there.*/
+	);
+
+	create table ALCOHOLIC_BEVERAGE
+	(price char(5) not null,
+	item_ID char(4) not null,
+	menu char(2) not null,
+	dates_available int not null,
+	primary key(item_ID),
+	constraint UC_alcoholic_beverage UNIQUE (item_id),
+	constraint menu_key2 foreign key(menu) references MENU(version_no),
+	constraint CHK_dates check (dates_available>0 AND dates_available<6)   /*only available on 6 special holidays; can be in between*/
+	);
+
+	create table REGULAR_ITEM
+	(price char(5) not null,
+	item_ID char(4) not null,
+	menu char(2) not null,
+	dates_available int not null,
+	primary key(item_ID),
+	constraint UC_regular_item UNIQUE (item_id),
+	constraint menu_key3
+    foreign key(menu) references MENU(version_no),
+	constraint CHK_dates2 check (dates_available>0 AND dates_available<261) /*there are 261 weekdays in a year, so somewhere between there*/
+	);
+
+
+
+	----------------------------------------------------------
+	----------------------------------------------------------
+	----------------------------------------------------------
+	--FILLING TUPLES:
+
+
+
+INSERT INTO The_OWNER  --name,ssn
+values
+ ('george',290981002),
+ ('larry',293058173),
+ ('jane',449285736),
+ ('marcus',293859374),
+ ('kelly',283749238);
+
+INSERT INTO RESTAURANT  --name,location,MgrSSN
+values
+ ('arbys','ohio',290981002),
+ ('wendys','maine',293058173),
+ ('mcdonalds','arizona',449285736),
+ ('chipotle','kansas',293859374),
+ ('carabbas','california',283749238);
+ 
+INSERT INTO EMPLOYEE --SSN,age,exp,mgr_ssn,loc
+values
+ (203958293,23,3,290981002,'ohio'),
+ (293819482,23,4,290981002,'ohio'),
+ (993829482,24,3,290981002,'ohio'),
+ (118274823,24,3,290981002,'ohio'),
+ (948729291,24,2,290981002,'ohio'),
+ (122848018,24,2,290981002,'ohio'),
+ (229387201,25,3,290981002,'ohio'),
+ (402829182,25,3,290981002,'ohio'),
+ (123947017,25,1,290981002,'ohio'),
+
+ (239409810,23,3,293058173,'maine'),
+ (423948791,23,4,293058173,'maine'),
+ (543810928,24,3,293058173,'maine'),
+ (130170470,24,3,293058173,'maine'),
+ (123019707,24,2,293058173,'maine'),
+ (127904701,24,2,293058173,'maine'),
+ (120937071,25,3,293058173,'maine'),
+ (478017203,25,3,293058173,'maine'),
+ (414107202,25,1,293058173,'maine'),
+
+ (771072070,23,3,449285736,'arizona'),
+ (771303707,23,4,449285736,'arizona'),
+ (884204801,24,3,449285736,'arizona'),
+ (221407042,24,3,449285736,'arizona'),
+ (450710723,24,2,449285736,'arizona'),
+ (457107023,24,2,449285736,'arizona'),
+ (414017029,25,3,449285736,'arizona'),
+ (310707022,25,3,449285736,'arizona'),
+ (222207107,25,1,449285736,'arizona'),
+
+ (208240808,23,3,293859374,'kansas'),
+ (131313020,23,4,293859374,'kansas'),
+ (122231382,24,3,293859374,'kansas'),
+ (412809833,24,3,293859374,'kansas'),
+ (123123133,24,2,293859374,'kansas'),
+ (414140192,24,2,293859374,'kansas'),
+ (508091822,25,3,293859374,'kansas'),
+ (410709273,25,3,293859374,'kansas'),
+ (109720974,25,1,293859374,'kansas'),
+
+ (029384090,23,3,283749238,'california'),
+ (141048092,23,4,283749238,'california'),
+ (519109022,24,3,283749238,'california'),
+ (141413103,24,3,283749238,'california'),
+ (121029032,24,2,283749238,'california'),
+ (131389249,24,2,283749238,'california'),
+ (131309829,25,3,283749238,'california'),
+ (111929993,25,3,283749238,'california'),
+ (444414141,25,1,283749238,'california');
+
+
+
+INSERT INTO FUNDS_ACCOUNT --accnt#,mgr_ssn,amnt
+values
+ (22930,290981002,99000),
+ (44192,293058173,11200),
+ (44929,449285736,33000),
+ (55919,293859374,40000),
+ (24482,283749238,20000);
+
+INSERT INTO PAYCHECK --id#,amount,accntNO,essn,owner_ssn
+values
+ --ohio employees
+ (13098,13000,22930,203958293,290981002),
+ (24902,15000,22930,122848018,290981002),
+
+ --maine employees
+ (20291,15000,44192,423948791,293058173),
+ (12074,14000,44192,120937071,293058173),
+
+ --arizona employees
+ (14019,13000,44929,884204801,449285736),
+ (12390,15000,44929,222207107,449285736),
+
+ --kansas employees
+ (52981,15000,55919,131313020,293859374),
+ (12094,16000,55919,410709273,293859374),
+
+ --california employees
+ (25029,14000,24482,029384090,283749238),
+ (11295,13000,24482,131389249,283749238);
+
+
+INSERT INTO PAYCHECK_AUDIT --id#,amount,accntNO,essn,owner_ssn,audit_action,dateTime
+values
+  --ohio employees
+ (13098,13000,22930,203958293,290981002,'deposit',1230),
+ (24902,15000,22930,122848018,290981002,'deposit',1400),
+
+ --maine employees
+ (20291,15000,44192,423948791,293058173,'deposit',1900),
+ (12074,14000,44192,120937071,293058173,'deposit',1350),
+
+ --arizona employees
+ (14019,13000,44929,884204801,449285736,'deposit',1020),
+ (12390,15000,44929,222207107,449285736,'deposit',4020),
+
+ --kansas employees
+ (52981,15000,55919,131313020,293859374,'deposit',1300),
+ (12094,16000,55919,410709273,293859374,'deposit',2100),
+
+ --california employees
+ (25029,14000,24482,029384090,283749238,'deposit',1400),
+ (11295,13000,24482,131389249,283749238,'deposit',1350);
+ 
+INSERT INTO RESERVATIONS --time, Lname, table_id, location, res_number
+values
+ (1230,'smith',01,'ohio',1),
+ (1230,'roberts',02,'ohio',2),
+ (1230,'alan',03,'ohio',3),
+ (1230,'candies',03,'ohio',4),
+ (1800,'richards',01,'ohio',5),
+ (1800,'lewis',02,'ohio',6),
+ (1800,'kouns',03,'ohio',7),
+ (1800,'fink',04,'ohio',8),
+ (1900,'charles',01,'ohio',9),
+ (1900,'snyder',02,'ohio',10),
+ (1900,'mikes',03,'ohio',11),
+ (1900,'smith',04,'ohio',12),
+
+ (1230,'arnie',01,'maine',13),
+ (1230,'kans',02,'maine',14),
+ (1230,'charles',03,'maine',15),
+ (1230,'candies',03,'maine',16),
+ (1800,'mikie',01,'maine',17),
+ (1800,'candies',02,'maine',18),
+ (1800,'charles',03,'maine',19),
+ (1800,'kouns',04,'maine',20),
+ (1900,'charles',01,'maine',21),
+ (1900,'snyder',02,'maine',22),
+ (1900,'mikes',03,'maine',23),
+ (1900,'smith',04,'maine',24),
+
+ (1230,'smith',01,'arizona',25),
+ (1230,'roberts',02,'arizona',26),
+ (1230,'alan',03,'arizona',27),
+ (1230,'kouns',03,'arizona',28),
+ (1800,'richards',01,'arizona',29),
+ (1800,'charles',02,'arizona',30),
+ (1800,'mikey',03,'arizona',31),
+ (1800,'martin',04,'arizona',32),
+ (1900,'martin',01,'arizona',33),
+ (1900,'lewis',02,'arizona',34),
+ (1900,'mikes',03,'arizona',35),
+ (1900,'smith',04,'arizona',36),
+
+ (1230,'alan',01,'kansas',37),
+ (1230,'raler',02,'kansas',38),
+ (1230,'alan',03,'kansas',39),
+ (1230,'martin',03,'kansas',40),
+ (1800,'kouns',01,'kansas',41),
+ (1800,'lewis',02,'kansas',42),
+ (1800,'kouns',03,'kansas',43),
+ (1800,'lewis',04,'kansas',44),
+ (1900,'kouns',01,'kansas',45),
+ (1900,'charles',02,'kansas',46),
+ (1900,'candice',03,'kansas',47),
+ (1900,'mikes',04,'kansas',48),
+
+ (1230,'mike',01,'california',49),
+ (1230,'cray',02,'california',50),
+ (1230,'shay',03,'california',51),
+ (1230,'tana',03,'california',52),
+ (1800,'mikes',01,'california',53),
+ (1800,'alan',02,'california',54),
+ (1800,'kouns',03,'california',55),
+ (1800,'richards',04,'california',56),
+ (1900,'alan',01,'california',57),
+ (1900,'kouns',02,'california',58),
+ (1900,'mikes',03,'california',59),
+ (1900,'martin',04,'california',60);
+
+INSERT INTO WAITER --ssn,age
+values
+ (203958293,23),
+ (293819482,23),
+ (993829482,24),
+ (118274823,24),
+ (948729291,24),
+ (122848018,24),
+ (229387201,25),
+ (402829182,25),
+ (123947017,25),
+
+ (239409810,23),
+ (423948791,23),
+ (543810928,24),
+ (130170470,24),
+ (123019707,24),
+ (127904701,24),
+ (120937071,25),
+ (478017203,25),
+ (414107202,25),
+
+ (771072070,23),
+ (771303707,23),
+ (884204801,24),
+ (221407042,24),
+ (450710723,24),
+ (457107023,24),
+ (414017029,25);
+
+INSERT INTO COOK --ssn,education
+values
+ (310707022,3),
+ (222207107,1),
+
+ (208240808,3),
+ (131313020,4),
+ (122231382,3),
+ (412809833,3),
+ (123123133,2),
+ (414140192,2),
+ (508091822,3),
+ (410709273,3),
+ (109720974,1),
+
+ (029384090,3),
+ (141048092,4),
+ (519109022,3),
+ (141413103,3),
+ (121029032,2),
+ (131389249,2),
+ (131309829,3),
+ (111929993,3),
+ (444414141,1);
+
+
+INSERT INTO AVAILABLE_TABLE --waiter,seats,table#
+values
+ (203958293,3,01),
+ (293819482,4,02),
+ (993829482,5,03),
+ (118274823,6,04),
+ (948729291,7,05),
+ (122848018,8,06),
+ (229387201,3,07),
+ (402829182,4,08),
+ (123947017,5,09),
+ (239409810,1,10),
+ (423948791,1,11),
+ (543810928,1,12),
+ (130170470,1,13),
+ (123019707,1,14),
+ (127904701,1,15),
+ (120937071,8,16),
+ (478017203,8,17),
+ (414107202,8,18),
+ (771072070,2,19),
+ (771303707,2,20),
+ (884204801,2,21),
+ (221407042,2,22),
+ (450710723,2,23),
+ (457107023,2,24),
+ (414017029,3,25);
+
+INSERT INTO MENU --creator_cook,version,items
+values
+ (508091822,01,15),
+ (410709273,02,15),
+ (109720974,03,18);
+
+
+INSERT INTO ONLINE_ORDER --ID,items,menu_version
+values
+ (1,2,01),
+ (2,3,01),
+ (3,1,01),
+ (4,1,01),
+ (5,1,01),
+ (6,1,01),
+ (7,3,01),
+ (8,3,01),
+ (9,4,01),
+ (10,4,01),
+ (11,4,01),
+ (12,5,01),
+ (13,2,01),
+ (14,3,01),
+ (15,3,01),
+ (16,1,01),
+
+ (17,2,02),
+ (18,3,02),
+ (19,1,02),
+ (20,1,02),
+ (21,1,02),
+ (22,1,02),
+ (23,3,02),
+ (24,3,02),
+ (25,4,02),
+ (26,4,02),
+ (27,4,02),
+ (28,5,02),
+ (29,2,02),
+ (30,3,02),
+ (31,3,02),
+ (32,1,02),
+
+ (33,2,03),
+ (34,3,03),
+ (35,1,03),
+ (36,1,03),
+ (37,1,03),
+ (38,1,03),
+ (39,3,03),
+ (40,3,03),
+ (41,4,03),
+ (42,4,03),
+ (43,4,03),
+ (44,5,03),
+ (45,2,03),
+ (46,3,03),
+ (47,3,03),
+ (48,1,03),
+
+ (49,2,03),
+ (50,3,03),
+ (51,1,03),
+ (52,1,03),
+ (53,1,03),
+ (54,1,03),
+ (55,3,03),
+ (56,3,03),
+ (57,4,03),
+ (58,4,03),
+ (59,4,03),
+ (60,5,03);
+
+INSERT INTO CUSTOMER --ID,no_people,location,res_time,res#,order#
+values
+ (888237040,3,'ohio',1230,1,1),
+ (888247979,2,'ohio',1230,2,2),
+ (334927492,2,'ohio',1230,3,3),
+ (349809222,2,'ohio',1230,4,4),
+ (232932903,2,'ohio',1800,5,5),
+ (444409280,4,'ohio',1800,6,6),
+ (444047023,4,'ohio',1800,7,7),
+ (420428420,4,'ohio',1800,8,8),
+ (333408203,2,'ohio',1900,9,9),
+ (440129857,2,'ohio',1900,10,10),
+ (444442093,2,'ohio',1900,11,11),
+ (423402980,3,'ohio',1900,12,12),
+
+ (222208408,1,'maine',1230,13,13),
+ (111092809,1,'maine',1230,14,14),
+ (120310390,2,'maine',1230,15,15),
+ (111111232,2,'maine',1230,16,16),
+ (333010920,2,'maine',1800,17,17),
+ (444444141,4,'maine',1800,18,18),
+ (311313243,4,'maine',1800,19,19),
+ (290981029,4,'maine',1800,20,20),
+ (414091840,8,'maine',1900,21,21),
+ (555559028,8,'maine',1900,22,22),
+ (525928092,8,'maine',1900,23,23),
+ (444440923,3,'maine',1900,24,24),
+
+ (888230409,4,'arizona',1230,25,25),
+ (999207092,8,'arizona',1230,26,26),
+ (239200003,8,'arizona',1230,27,27),
+ (444090404,6,'arizona',1230,28,28),
+ (222209019,3,'arizona',1800,29,29),
+ (111190820,3,'arizona',1800,30,30),
+ (444019802,4,'arizona',1800,31,31),
+ (888209202,4,'arizona',1800,32,32),
+ (444409480,6,'arizona',1900,33,33),
+ (555095090,2,'arizona',1900,34,34),
+ (120918092,2,'arizona',1900,35,35),
+ (444981490,4,'arizona',1900,36,36),
+
+ (222299209,5,'kansas',1230,37,37),
+ (232322333,5,'kansas',1230,38,38),
+ (102901922,8,'kansas',1230,39,39),
+ (039809803,4,'kansas',1230,40,40),
+ (333099830,4,'kansas',1800,41,41),
+ (110919012,1,'kansas',1800,42,42),
+ (414098242,6,'kansas',1800,43,43),
+ (110980292,5,'kansas',1800,44,44),
+ (312323981,8,'kansas',1900,45,45),
+ (141410902,8,'kansas',1900,46,46),
+ (130193809,3,'kansas',1900,47,47),
+ (319380922,3,'kansas',1900,48,48),
+
+ (141049049,4,'california',1230,49,49),
+ (129100902,4,'california',1230,50,50),
+ (141409144,4,'california',1230,51,51),
+ (000029023,3,'california',1230,52,52),
+ (300293090,8,'california',1800,53,53),
+ (003020333,6,'california',1800,54,54),
+ (202000030,3,'california',1800,55,55),
+ (113019309,5,'california',1800,56,56),
+ (330390033,3,'california',1900,57,57),
+ (414190902,2,'california',1900,58,58),
+ (110909204,1,'california',1900,59,59),
+ (440404910,1,'california',1900,60,60);
+
+INSERT INTO SPECIAL --price,itemID,menuVersion,dates_available
+values
+ (25,49,01,3),
+ (20,50,01,5),
+ (15,51,01,5),
+ (15,52,01,5),
+ (15,53,01,8),
+ (10,54,02,5),
+ (20,55,02,5),
+ (32,56,02,1),
+ (25,57,02,1),
+ (20,58,02,1),
+ (15,59,03,3),
+ (15,60,03,5),
+ (15,61,03,5),
+ (10,62,03,5),
+ (20,63,03,5),
+ (32,64,03,8),
+ (25,65,01,8),
+ (20,18,01,8),
+ (15,19,01,8),
+ (15,20,01,5),
+ (15,21,01,5),
+ (10,22,02,3),
+ (20,23,02,3),
+ (32,24,02,3),
+ (25,25,02,3),
+ (20,26,02,5),
+ (15,27,03,8),
+ (15,28,03,1),
+ (15,29,03,5),
+ (10,30,03,1),
+ (20,31,03,1),
+ (32,32,03,1),
+ (25,33,01,8),
+ (20,34,01,5),
+ (15,35,01,5),
+ (15,36,01,5),
+ (15,37,01,5),
+ (10,38,02,1),
+ (20,39,02,1),
+ (32,40,02,1),
+ (25,41,02,8),
+ (20,42,02,3),
+ (15,43,03,3),
+ (15,44,03,5),
+ (15,45,03,5),
+ (10,46,03,1),
+ (20,47,03,1),
+ (32,48,03,1);
+
+
+INSERT INTO REGULAR_ITEM --price,itemID,menuVersion,dates_available
+values
+ (25,17,01,250),
+ (20,18,01,250),
+ (15,19,01,250),
+ (15,20,01,230),
+ (15,21,01,230),
+ (10,22,02,240),
+ (20,23,02,259),
+ (32,24,02,259),
+ (25,25,02,239),
+ (20,26,02,203),
+ (15,27,03,259),
+ (15,28,03,229),
+ (15,29,03,222),
+ (10,30,03,233),
+ (20,31,03,233),
+ (32,32,03,233);
+
+INSERT INTO ALCOHOLIC_BEVERAGE --price,itemID,menuVersion,dates_available
+values
+ (25,33,01,3),
+ (20,34,01,3),
+ (15,35,01,3),
+ (15,36,01,5),
+ (15,37,01,5),
+ (10,38,02,1),
+ (20,39,02,1),
+ (32,40,02,1),
+ (25,41,02,1),
+ (20,42,02,3),
+ (15,43,03,3),
+ (15,44,03,5),
+ (15,45,03,5),
+ (10,46,03,1),
+ (20,47,03,1),
+ (32,48,03,1);

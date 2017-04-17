@@ -1,0 +1,75 @@
+DECLARE @intErrorCode INT
+BEGIN TRAN
+	UPDATE restaurant.dbo.EMPLOYEE
+	SET experience = '3'
+	WHERE ssn = '444414141'
+
+	SELECT @intErrorCode = @@ERROR
+	IF (@intErrorCode <> 0) GOTO PROBLEM
+
+	UPDATE restaurant.dbo.COOK
+	SET education = '3'
+	WHERE ssn = '444414141'
+
+	SELECT @intErrorCode = @@ERROR
+	IF (@intErrorCode <> 0) GOTO PROBLEM
+COMMIT TRAN
+PROBLEM:
+IF (@intErrorCode <> 0) BEGIN
+PRINT 'Unexpected error occured!'
+	ROLLBACK TRAN
+END
+
+SELECT 'Before BEGIN TRAN', @@TRANCOUNT
+BEGIN TRAN
+	SELECT 'After BEGIN TRAN', @@TRANCOUNT
+	INSERT INTO restaurant.dbo.EMPLOYEE values ('155263712', '24', '5', '290981002', 'ohio')
+
+	BEGIN TRAN nested
+		SELECT 'After BEGIN TRAN nested', @@TRANCOUNT
+
+		UPDATE restaurant.dbo.EMPLOYEE
+		SET experience = '3'
+		WHERE ssn = '155263712'  --use different ssn?
+
+	COMMIT TRAN nested
+
+	SELECT 'After COMMIT TRAN nested', @@TRANCOUNT
+
+ROLLBACK TRAN
+
+SELECT 'After ROLLBACK TRAN', @@TRANCOUNT
+
+SELECT * FROM restaurant.dbo.EMPLOYEE
+
+SELECT 'Before BEGIN TRAN', @@TRANCOUNT
+BEGIN TRAN main
+	SELECT 'After BEGIN TRAN main', @@TRANCOUNT
+	INSERT INTO restaurant.dbo.EMPLOYEE values ('019000293', '22', '2', '290981002', 'ohio')
+	SAVE TRAN addrec
+	SELECT 'After SAVE TRAN addrec', @@TRANCOUNT
+
+	SELECT * FROM restaurant.dbo.EMPLOYEE
+
+	BEGIN TRAN nested
+		SELECT 'After BEGIN TRAN nested', @@TRANCOUNT
+
+		UPDATE restaurant.dbo.EMPLOYEE
+		SET experience = '9'
+		WHERE ssn = '019000293'   --same ssn problem?
+
+		SAVE TRAN updaterec
+		SELECT 'After SAVE TRAN updaterec'
+
+			SELECT * FROM restaurant.dbo.EMPLOYEE
+
+	ROLLBACK TRAN addrec
+	SELECT 'After SAVE TRAN addrec', @@TRANCOUNT
+
+	SELECT * FROM restaurant.dbo.EMPLOYEE
+
+IF (@@TRANCOUNT > 0) BEGIN
+	ROLLBACK TRAN
+	SELECT 'AFTER ROLLBACK TRAN', @@TRANCOUNT
+
+END
