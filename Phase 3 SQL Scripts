@@ -22,11 +22,11 @@ WHERE s.price=a.price AND s.dates_available>=a.dates_available)
 SELECT COUNT(ssn) as ssn, AVG(age) as avg FROM EMPLOYEE 
 GROUP BY mgr_ssn
 
---shows available tables for waiters, cooks that have the same experience as the age of the waiters, and all employees older than 23 
-SELECT table_no FROM (AVAILABLE_TABLE as a JOIN 
-(WAITER as w JOIN (COOK as c JOIN EMPLOYEE as e ON e.age>23) 
-ON w.age=c.education) ON a.waiter=w.ssn)
+--shows ID of all orders that come from menu version 01 and a cook with 2 or more years of experience
+SELECT ID FROM (ONLINE_ORDER as o JOIN 
+(COOK as c JOIN MENU as m ON c.education>1 AND m.creator=c.ssn) 
+ON o.menu_version=01)
 
---finds all regular items that have a price greater than 20
+--finds all regular items that have the same price as a special and the price is greater than 20
 SELECT r.price, r.item_id FROM REGULAR_ITEM as r
-FULL OUTER JOIN SPECIAL as s ON s.price=r.price
+FULL OUTER JOIN SPECIAL as s ON s.price>20 AND r.price>20
