@@ -1,22 +1,32 @@
+--gets the price and id of all specials and regular items that have a price greater than 20
 SELECT price, item_id FROM REGULAR_ITEM WHERE price > 20
 UNION
 SELECT price, item_id FROM SPECIAL WHERE price > 20
 
+--lists prices and dates available for alcoholic beverages adn specials that are available more than 1 day of the year
 SELECT price, dates_available FROM ALCOHOLIC_BEVERAGE WHERE dates_available > 1
 INTERSECT
 SELECT price, dates_available FROM SPECIAL WHERE dates_available > 1
 
-SELECT price, dates_available FROM SPECIAL
+--finds all waiters who are assigned to tables except ones that are younger than 21
+SELECT ssn FROM WAITER WHERE ssn IN (SELECT waiter FROM AVAILABLE_TABLE)
 EXCEPT
-SELECT price, dates_available FROM ALCOHOLIC_BEVERAGE
+SELECT ssn FROM WAITER WHERE age<21
 
+--displays special items with the same price and at least as many dates available as alcoholic beverages
 SELECT price, dates_available FROM SPECIAL AS s WHERE EXISTS
 (SELECT price,dates_available FROM ALCOHOLIC_BEVERAGE AS a
-WHERE s.price=a.price AND a.dates_available>=s.dates_available)
+WHERE s.price=a.price AND s.dates_available>=a.dates_available)
 
+--lists number of employees and average age of employees under each manager
 SELECT COUNT(ssn) as ssn, AVG(age) as avg FROM EMPLOYEE 
 GROUP BY mgr_ssn
 
+--shows available tables for waiters, cooks that have the same experience as the age of the waiters, and all employees older than 23 
 SELECT table_no FROM (AVAILABLE_TABLE as a JOIN 
 (WAITER as w JOIN (COOK as c JOIN EMPLOYEE as e ON e.age>23) 
-ON e.age=c.education) ON a.waiter=e.ssn)
+ON w.age=c.education) ON a.waiter=w.ssn)
+
+--finds all regular items that have a price greater than 20
+SELECT r.price, r.item_id FROM REGULAR_ITEM as r
+FULL OUTER JOIN SPECIAL as s ON s.price=r.price
